@@ -21,19 +21,19 @@ const frontend = `
 <style>
   :root{--bg:#f5f7fb;--card:#ffffff;--muted:#6b7280;--accent:#0f62fe;--success:#0f9d58}
   body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);color:#111}
-  header{background:linear-gradient(90deg,#08357b 0%, #0f62fe 100%);color:white;padding:28px 24px}
+  header{background:linear-gradient(90deg,#08357b 0%, #d38ac2ff 100%);color:white;padding:28px 24px}
   .container{max-width:980px;margin:20px auto;padding:0 20px}
   .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .logo{width:48px;height:48px;border-radius:8px;background:rgba(105, 27, 59, 0.99);display:flex;align-items:center;justify-content:center;font-weight:700}
   h1{margin:0;font-size:20px}
   p.lead{color:var(--muted);margin:8px 0 0;fontpx}
 
   .grid{display:grid;grid-template-columns:1fr 360px;gap:20px;margin-top:20px}
-  .card{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(17,24,39,0.06)}
+  .card{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(41, 30, 40, 0.06)}
   .hero{display:flex;flex-direction:column;gap:12px}
   .cta{display:flex;gap:10px;margin-top:8px}
   button{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
-  button.ghost{background:transparent;border:1px solid #e6eefc;color:var(--accent)}
+  button.ghost{background:transparent;border:1px solid #3f4653ff;color:var(--accent)}
   .status{display:flex;gap:12px;align-items:center}
   .dot{width:12px;height:12px;border-radius:50%;background:#f59e0b}
   .stat-list{display:flex;gap:12px;margin-top:8px}
@@ -52,7 +52,7 @@ const frontend = `
         <div class="logo">CI</div>
         <div>
           <h1>NodeJS CI Demo</h1>
-          <p class="lead">A minimal corporate-style app — built for CI/CD demos.</p>
+          <p class="lead">Hey, have a nice day!</p>
         </div>
       </div>
     </div>
@@ -149,12 +149,12 @@ const frontend = `
       const res = await fetch('/health');
       if (!res.ok) throw new Error('Non-OK response: ' + res.status);
       const data = await res.json();
-      healthDot.style.background = data.status === 'ok' ? '#0f9d58' : '#ef4444';
+      healthDot.style.background = data.status === 'ok' ? '#0f309dff' : '#dbe8b8ff';
       healthMsg.textContent = 'Status: ' + data.status;
       lastChecked.textContent = new Date().toLocaleString();
       uptimeEl.textContent = data.uptime || '—';
     } catch (err) {
-      healthDot.style.background = '#ef4444';
+      healthDot.style.background = '#00edbeff';
       healthMsg.textContent = 'Status: offline';
       lastChecked.textContent = new Date().toLocaleString();
       uptimeEl.textContent = '—';
