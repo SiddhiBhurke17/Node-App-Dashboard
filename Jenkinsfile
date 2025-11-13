@@ -2,53 +2,68 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/node-ci-demo"
-        DOCKER_TAG = "latest"
-        DOCKER_CREDENTIALS = "dockerhub" // Jenkins credentials ID
+        APP_NAME = "nodejs-application"
+        DOCKER_IMAGE = "siddhi17/nodejs-application"
+        DOCKER_CREDENTIALS = "dockerhub-creds"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-repo.git'
+                echo 'Pulling source code from GitHub...'
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                echo 'Building Docker image...'
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    IMAGE_TAG = "${DOCKER_IMAGE}:${COMMIT}"
+                    sh "docker build -t ${IMAGE_TAG} ."
                 }
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Push to DockerHub') {
             steps {
+                echo 'Pushing Docker image to DockerHub...'
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKER_IMAGE}:$(git rev-parse --short HEAD)
+                        docker logout
+                    '''
                 }
-            }
-        }
-
-        stage('Push Image to DockerHub') {
-            steps {
-                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
 
         stage('Deploy Container') {
             steps {
+                echo 'Deploying container on EC2...'
                 script {
-                    // Stop old container if running
-                    sh "docker ps -q --filter 'name=node-ci-demo' | grep -q . && docker stop node-ci-demo && docker rm node-ci-demo || true"
-                    
-                    // Pull latest image
-                    sh "docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                    
-                    // Run container with port mapping
-                    sh "docker run -d --name node-ci-demo -p 3000:3000 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh '''
+                        # Stop old container if exists
+                        docker ps -q --filter "name=nodejs-application" | grep -q . && docker stop nodejs-application && docker rm nodejs-application || true
+                        
+                        # Pull latest image
+                        docker pull ${DOCKER_IMAGE}:$(git rev-parse --short HEAD)
+                        
+                        # Run container with port mapping
+                        docker run -d --name nodejs-application -p 3000:3000 ${DOCKER_IMAGE}:$(git rev-parse --short HEAD)
+                    '''
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Image successfully built, pushed, and deployed!'
+        }
+        failure {
+            echo 'Build failed. Check Jenkins logs.'
         }
     }
 }
