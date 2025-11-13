@@ -33,7 +33,7 @@ const frontend = `
   .hero{display:flex;flex-direction:column;gap:12px}
   .cta{display:flex;gap:10px;margin-top:8px}
   button{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
-  button.ghost{background:transparent;border:1px solid #3f4653ff;color:var(--accent)}
+  button.ghost{background:transparent;border:1px solid #676e7aff;color:var(--accent)}
   .status{display:flex;gap:12px;align-items:center}
   .dot{width:12px;height:12px;border-radius:50%;background:#f59e0b}
   .stat-list{display:flex;gap:12px;margin-top:8px}
