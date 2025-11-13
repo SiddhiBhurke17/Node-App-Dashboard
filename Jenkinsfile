@@ -2,50 +2,53 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "nodejs-application"
-        DOCKER_IMAGE = "siddhi17/nodejs-application"
+        DOCKER_IMAGE = "your-dockerhub-username/node-ci-demo"
+        DOCKER_TAG = "latest"
+        DOCKER_CREDENTIALS = "dockerhub" // Jenkins credentials ID
     }
 
     stages {
-
         stage('Checkout') {
             steps {
-                echo 'Pulling source code from GitHub...'
-                checkout scm
+                git branch: 'main', url: 'https://github.com/your-repo.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
                 script {
-                    COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    IMAGE_TAG = "${DOCKER_IMAGE}:${COMMIT}"
-                    sh "docker build -t ${IMAGE_TAG} ."
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Login to DockerHub') {
             steps {
-                echo 'Pushing Docker image to DockerHub...'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${DOCKER_IMAGE}:$(git rev-parse --short HEAD)
-                        docker logout
-                    '''
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo ' Image successfully built and pushed to DockerHub!'
+        stage('Push Image to DockerHub') {
+            steps {
+                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
         }
-        failure {
-            echo ' Build failed. Check Jenkins logs.'
+
+        stage('Deploy Container') {
+            steps {
+                script {
+                    // Stop old container if running
+                    sh "docker ps -q --filter 'name=node-ci-demo' | grep -q . && docker stop node-ci-demo && docker rm node-ci-demo || true"
+                    
+                    // Pull latest image
+                    sh "docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    
+                    // Run container with port mapping
+                    sh "docker run -d --name node-ci-demo -p 3000:3000 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
         }
     }
 }
