@@ -1,0 +1,24 @@
+{
+  "name": "nodejs-ci-demo",
+  "version": "1.0.0",
+  "description": "A simple Node.js CI/CD demo for Jenkins and DockerHub",
+  "main": "app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Siddhi",
+  "license": "MIT",
+  "keywords": [
+    "nodejs",
+    "ci",
+    "cicd",
+    "docker",
+    "jenkins"
+  ],
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nodejs-ci-demo.git"
+  }
+}
